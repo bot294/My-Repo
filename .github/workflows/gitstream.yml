@@ -1,9 +1,35 @@
+name: MyGitStream
 
-rules:
-  - name: "Fast Track Small PRs"
-    conditions:
-      - type: "lines_changed"
-        operator: "<="
-        value: 50
-    actions:
-      - type: "auto_merge"
+on:
+  pull_request:
+    types: [synchronize, opened, reopened]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Git
+        run: sudo apt-get install git
+
+      - name: Get changed lines
+        id: get-changed-lines
+        run: |
+          changed_files=$(git diff --name-only HEAD~1 HEAD)
+          total_lines_changed=0
+          
+          for file in $changed_files; do
+            lines=$(git diff --numstat HEAD~1 HEAD -- $file | awk '{sum += $1} END {print sum}')
+            total_lines_changed=$((total_lines_changed + lines))
+          done
+
+          echo "Total lines changed: $total_lines_changed"
+          echo "LINES_CHANGED=$total_lines_changed" >> $GITHUB_ENV
+
+      - name: Merge if less than 50 lines changed
+        if: ${{ env.LINES_CHANGED < 50 }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} --merge
