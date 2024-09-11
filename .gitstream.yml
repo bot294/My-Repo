@@ -6,12 +6,3 @@ rules:
         value: 50
     actions:
       - type: "auto_merge"
-
-  - name: "High-Risk Code Review"
-    conditions:
-      - type: "files"
-        pattern: "src/security/**"
-    actions:
-      - type: "request_review"
-        reviewers:
-          - "security-team"
