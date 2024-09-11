@@ -1,15 +1,31 @@
-- name: "Fast Track Small PRs"
-  conditions:
-      - type: "lines_changed"
-        operator: "<="
-        value: 50
-  actions:
-      - type: "auto_merge"
-- name: "High-Risk Code Review"
-  conditions:
-      - type: "files"
-        pattern: "src/security/**"
-  actions:
-      - type: "request_review"
-  reviewers:
-      - "security-team"
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run Tests
+      run: npm test
+
+    - name: Build Project
+      run: npm run build
